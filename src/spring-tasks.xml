@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns:task="http://www.springframework.org/schema/task" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+	
+	<!--注解定时器  -->
+	<!-- <task:scheduled-tasks>
+		每天早上0点1分1秒全部更新視頻路徑
+		<task:scheduled ref="taskJob" method="job1" cron="1 29 14 * * ?" />
+		
+	</task:scheduled-tasks> -->
+	
+	<!--手动配置定时器  -->
+ 	<task:scheduled-tasks>
+	
+			<task:scheduled ref="TaskAction" method="task" cron="1 0 0 * * ?"/>
+		
+	</task:scheduled-tasks> 
+	
+	<!-- <bean id="clearDao" class="com.greenorbs.dao.impl.ClearDaoImpl">
+	<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<bean id="clearService" class="com.greenorbs.service.impl.ClearServiceImpl">
+	<property name="clearDao" ref="clearDao"></property>
+	</bean> 手动注入 set get -->
+	
+ 	<bean id="TaskAction" class="com.greenorbs.task.ClearnVideoTask">
+	<property name="clearService" ref="clearServiceImpl"></property>
+	</bean> 
+	
+</beans>

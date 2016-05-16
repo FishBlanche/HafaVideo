@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:c="http://www.springframework.org/schema/c" xmlns:cache="http://www.springframework.org/schema/cache"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<!-- 自动扫描controller包下的所有类，使其认为spring mvc的控制器 -->
+	<context:component-scan base-package="com.greenorbs.controller" />
+
+	<!-- Spring MVC JSON配置 -->
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<!-- <bean id="fastJsonHttpMessageConverter" class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter"> -->
+				<bean id="fastJsonHttpMessageConverter" class="com.greenorbs.util.FastJsonHttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>text/html;charset=UTF-8</value><!-- 避免IE出现下载JSON文件的情况 -->
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 对模型视图名称的解析，即在模型视图名称添加前后缀 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+		p:prefix="/WEB-INF/view/" p:suffix=".jsp" />
+
+	<!-- SpringMVC上传文件时,需配置MultipartResolver处理器 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF-8" />
+		<!-- 指定所上传文件的总大小不能超过100M......注意maxUploadSize属性的限制不是针对单个文件,而是所有文件的容量之和 -->
+		<property name="maxUploadSize" value="107374100" />
+	</bean>
+	<!-- SpringMVC在超出上传文件限制时,会抛出org.springframework.web.multipart.MaxUploadSizeExceededException -->
+	<!-- 该异常是SpringMVC在检查上传的文件信息时抛出来的,而且此时还没有进入到Controller方法中 -->
+	<bean id="exceptionResolver"
+		class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<props>
+				<!-- 遇到MaxUploadSizeExceededException异常时,自动跳转到/WEB-INF/jsp/error_fileupload.jsp页面 -->
+				<prop
+					key="org.springframework.web.multipart.MaxUploadSizeExceededException">error_fileupload</prop>
+			</props>
+		</property>
+	</bean>
+	<!-- 拦截器 -->
+	<!-- <mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<bean class="com.greenorbs.interceptors.SecurityInterceptor">
+				不需要权限验证的地址
+				<property name="excludeUrls">
+					<list>
+						<value>/initController/init</value>初始化数据库
+						<value>/resourceController/tree</value>首页左侧功能菜单
+						<value>/resourceController/getMainMenu</value>首页左侧功能菜单
+
+						<value>/userController/reg</value>用户注册
+						<value>/userController/login</value>用户登录
+						<value>/userController/loginCombobox</value>用户登录里面的autocomplete功能
+						<value>/userController/loginCombogrid</value>用户登录里面的combogrid功能
+						<value>/userController/logout</value>注销登录
+						<value>/resourceController/allTree</value>角色访问资源下拉树
+						<value>/roleController/tree</value>用户访问角色树(只能看到自己拥有的角色)
+						<value>/roleController/allTree</value>用户访问角色树
+						<value>/userController/editCurrentUserPwdPage</value>用户修改自己的密码页面
+						<value>/userController/editCurrentUserPwd</value>用户修改自己的密码
+						<value>/groupController/editCurrentGroupPwdPage</value>团队修改自己的密码页面
+						<value>/groupController/editCurrentGroupPwd</value>团队修改自己的密码
+						<value>/userController/currentUserRolePage</value>查看自己的角色页面
+						<value>/userController/currentUserResourcePage</value>查看自己的权限页面
+
+						<value>/groupController/login</value>团队登陆
+						<value>/groupController/groupTeacher</value>转跳修改老师页面
+						<value>/groupController/groupGroup</value>转跳修改团队页面
+						<value>/groupController/groupCompetition</value>转跳修改赛制页面
+						<value>/groupController/groupMember</value>转跳修改队员页面
+
+						<value>/fileController/fileDownloadSearch</value>资源搜索
+						<value>/userController/userLoginOut</value>用户退出系统
+						<value>/groupController/groupLoginOut</value>团队退出系统
+						
+						<value>/allocateController/test</value>测试 
+					</list>
+				</property>
+			</bean>
+		</mvc:interceptor>
+	</mvc:interceptors> -->
+
+</beans>
